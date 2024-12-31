@@ -8,44 +8,10 @@ import org.icepear.echarts.charts.line.LineAreaStyle;
 import org.icepear.echarts.charts.line.LineSeries;
 import org.icepear.echarts.components.coord.cartesian.CategoryAxis;
 import org.icepear.echarts.render.Engine;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-class BPNNTest {
+public class BPNNTest {
 
-    @Test
-    public void imageUtilsTest(){
-        double[][] doubles = ImageUtils.readImageMatrixBinary("E:\\IntelliJ_WorkSpace\\ITWork\\src\\main\\resources\\0-1-test.png");
-        NerveUtils.printMatrix(doubles);
-
-        OldCNN cnn = new OldCNN(2,2,2, new double[][]{
-                {1, 1, -1},
-                {-1, 0, 1},
-                {1, -1, 0}},doubles);
-        cnn.convolution();
-        cnn.pool();
-
-        OldCNN cnn1 = new OldCNN(2,2,2, new double[][]{
-                {0, 1, 0},
-                {0, 1, -1},
-                {1, 1, 0}},doubles);
-        cnn1.convolution();
-        cnn1.pool();
-
-        OldCNN cnn2 = new OldCNN(2,2,2, new double[][]{
-                {1, -1, 1},
-                {0, 0, -1},
-                {0, 1, 1}},doubles);
-        cnn2.convolution();
-        cnn2.pool();
-
-        System.out.println();
-//        NerveUtils.printMatrix(cnn.getConv());
-        NerveUtils.printMatrix(cnn.getPool());
-        System.out.println();
-        NerveUtils.printMatrix(cnn1.getPool());
-        System.out.println();
-        NerveUtils.printMatrix(cnn2.getPool());
-    }
     @Test
     public void ccc() {
         BPNN bpnn = new BPNN(32, 2, 0.05, new int[]{16,16});
@@ -100,47 +66,37 @@ class BPNNTest {
     public void imageTest(){
 //        double[][] doubles = ImageUtils.readImageBinary("E:\\Image训练集\\测试\\img-0\\4101.jpg");
 //        System.out.println(doubles[0].length);
+//        BPNN bpnn = BPNN.build("BPNNweights.txt");
+
         BPNN bpnn = NerveUtils.nerveImage(
                 new String[]{
-                        "E:\\Image训练集\\测试\\img-0",
-                        "E:\\Image训练集\\测试\\img-1",
-                        "E:\\Image训练集\\测试\\img-2",
-                        "E:\\Image训练集\\测试\\img-3",
-                        "E:\\Image训练集\\测试\\img-4",
-                        "E:\\Image训练集\\测试\\img-5",
-                        "E:\\Image训练集\\测试\\img-6",
-                        "E:\\Image训练集\\测试\\img-7",
-                        "E:\\Image训练集\\测试\\img-8",
-                        "E:\\Image训练集\\测试\\img-9"});
-        //神经网络输入
-        bpnn.input(ImageUtils.readImageBinaryResource("0-1-test.png"));
-        //神经网络向前传播
-        bpnn.forward();
-        bpnn.printLayers();
-        System.out.println();
+                        "E:\\Image训练集\\mnist\\0",
+                        "E:\\Image训练集\\mnist\\1",
+                        "E:\\Image训练集\\mnist\\2",
+                        "E:\\Image训练集\\mnist\\3",
+                        "E:\\Image训练集\\mnist\\4",
+                        "E:\\Image训练集\\mnist\\5",
+                        "E:\\Image训练集\\mnist\\6",
+                        "E:\\Image训练集\\mnist\\7",
+                        "E:\\Image训练集\\mnist\\8",
+                        "E:\\Image训练集\\mnist\\9"});
 
+        bpnn.save("BPNNweights.txt");
 
-        //神经网络输入
-        bpnn.input(ImageUtils.readImageBinaryResource("9-4-test.png"));
-        //神经网络向前传播
-        bpnn.forward();
-        bpnn.printLayers();
-        System.out.println();
-
-
-        //神经网络输入
-        bpnn.input(ImageUtils.readImageBinaryResource("9-5-test.png"));
-        //神经网络向前传播
-        bpnn.forward();
-        bpnn.printLayers();
-        System.out.println();
-
-
-        //神经网络输入
-        bpnn.input(ImageUtils.readImageBinaryResource("0-3-test.png"));
-        //神经网络向前传播
-        bpnn.forward();
-        bpnn.printLayers();
+//        //神经网络输
+//        bpnn.input(ImageUtils.readImageBinary("E:\\Image训练集\\6-0.png"));
+//        //神经网络向前传播
+//        bpnn.forward();
+//        bpnn.printLayers();
+//        double[][] out = bpnn.getOut();
+//        double max =0,index=-1;
+//        for (int i = 0; i < out[0].length; i++) {
+//            if(max<out[0][i]){
+//                max = out[0][i];
+//                index = i;
+//            }
+//        }
+//        System.out.println(index);
     }
 
     @Test
@@ -155,6 +111,6 @@ class BPNNTest {
                         .setAreaStyle(new LineAreaStyle()));
 
         Engine engine = new Engine();
-        engine.render("index.html",line);
+        engine.render("indexFormAverage.html",line);
     }
 }

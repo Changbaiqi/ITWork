@@ -10,6 +10,14 @@ public class CNN {
     private double  input[][];
     private ArrayList<double[][]> outs = new ArrayList<>(); //结果
 
+    /**
+     *
+     * @param kernelsSize 没层卷积核的大小长度
+     * @param kernelsStepSize 对应卷积核的卷积步长
+     * @param poolsSize 对应池化层的池化区域大小
+     * @param kernels 对应卷积核内部权值
+     * @param input 输入层
+     */
     public CNN(ArrayList<Integer> kernelsSize, ArrayList<Integer> kernelsStepSize, ArrayList<Integer> poolsSize, ArrayList<double[][]> kernels, double[][] input) {
         this.kernelsSize = kernelsSize;
         this.kernelsStepSize = kernelsStepSize;
@@ -28,7 +36,6 @@ public class CNN {
      * 向前传播
      */
     public void formWard(){
-
         //直接进行卷积
         for(int i = 0;i<outs.size();++i){ //输出层数
             for(int y= 0;y< outs.get(i).length;++y){  //对应层数卷积输出的y遍历
@@ -73,7 +80,8 @@ public class CNN {
                 for(int x = 0; x< res[y].length;++x){
                     int Xmin = x*poolsSize.get(i),Xmax = (x*poolsSize.get(i))+poolsSize.get(i);
                     int Ymin = y*poolsSize.get(i),Ymax = (y*poolsSize.get(i))+poolsSize.get(i);
-                    res[y][x] = maxPool(out,Xmin,Xmax,Ymin,Ymax);
+//                    res[y][x] = maxPool(out,Xmin,Xmax,Ymin,Ymax);
+                    res[y][x] = averagePool(out,Xmin,Xmax,Ymin,Ymax);
                 }
             }
             outs.set(i,res);
@@ -95,7 +103,26 @@ public class CNN {
         return max;
     }
 
-
+    /**
+     * 平均池化
+     * @param out
+     * @param Xmin
+     * @param Xmax
+     * @param Ymin
+     * @param Ymax
+     * @return
+     */
+    double averagePool(double out[][],int Xmin,int Xmax,int Ymin,int Ymax){
+        double sum=0;
+        int count = 0;
+        for(int y = Ymin;y<Ymax;++y){
+            for (int x = Xmin; x < Xmax; x++) {
+                sum += out[y][x];
+                ++count;
+            }
+        }
+        return sum/count;
+    }
     public ArrayList<double[][]> getOuts() {
         return outs;
     }

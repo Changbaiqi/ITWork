@@ -1,24 +1,23 @@
 package com.cbq.it.core;
 
-import org.junit.jupiter.api.Test;
+
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-class CNNTest {
+public class CNNTest {
 
     @Test
-    void input() {
+    public void input() {
     }
 
     @Test
-    void formWard() {
+    public void formWard() {
     }
 
     @Test
-    void printInput() {
+    public void printInput() {
         CNN cnn = new CNN(
                 new ArrayList<Integer>(Arrays.asList(3)),
                 new ArrayList<Integer>(Arrays.asList(1)),

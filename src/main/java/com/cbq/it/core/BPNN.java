@@ -13,6 +13,7 @@ public class BPNN {
     private int inputSize;
     private int outSize;
     private double studyRate;
+    private int hiddens[];
     private ArrayList<double[][]> layers;  //层值
     private ArrayList<double[][]> diffV;//差值
     private ArrayList<double[][]> weights;//权值
@@ -24,6 +25,7 @@ public class BPNN {
         this.layers = new ArrayList<>();
         this.weights = new ArrayList<>();
         this.diffV = new ArrayList<>();
+        this.hiddens = hiddens;
         layers.add(new double[1][inputSize]);  //输入层添加
         diffV.add(new double[1][inputSize]); //差值
         for (int i = 0; i < hiddens.length; ++i) {
@@ -61,7 +63,7 @@ public class BPNN {
     public void input(double input[][]) {
         double[][] inputLayer = layers.get(0);//输入层
         for (int y = 0; y < inputLayer[0].length; y++) {
-            inputLayer[0][y] = input[0][y];
+            layers.get(0)[0][y]=inputLayer[0][y] = input[0][y];
         } //输入
     }
 
@@ -95,12 +97,18 @@ public class BPNN {
     public void back(double out[][]) {
         double[][] outLayer = layers.get(layers.size() - 1);
         double[][] outDiff = diffV.get(diffV.size() - 1);
+        //输入层差值
         for (int i = 0; i < outDiff[0].length; i++) {
             outDiff[0][i] = out[0][i] - outLayer[0][i];
-        } //输入层差值
+            //原值
+//            double res = (-Math.log((1.0/outLayer)))
+//            (-Math.log((1.0/outDiff[0][i])-1))-
+        }
+        //差值传递
         for (int i = diffV.size() - 2; i >= 0; i--) {
             diffV.set(i, NerveUtils.matrixMulti(diffV.get(i + 1), NerveUtils.matrixTrans(weights.get(i))));
-        }//差值传递
+        }
+        //权值修正
         for (int i = 0; i < weights.size(); i++) {
             double[][] weight = weights.get(i);
             for (int y = 0; y < weight.length; y++) {
@@ -154,33 +162,48 @@ public class BPNN {
     }
 
 
+    /**
+     * 用于保存模型
+     * @param fileName
+     */
     public void save(String fileName){
         ObjectMapper objectMapper = new ObjectMapper();
+        BPNNConfig config = new BPNNConfig(inputSize,outSize,studyRate,hiddens,weights);
+
         try {
-            String string = objectMapper.writeValueAsString(weights);
-            FileUtils.saveFile(string.getBytes(),fileName);
+            //权值信息
+            String weightsJson = objectMapper.writeValueAsString(config);
+            FileUtils.saveFile(weightsJson.getBytes(),fileName);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
-    public void readFileWeight(String fileName){
-        ObjectMapper objectMapper = new ObjectMapper();
+
+    public ArrayList<double[][]> getWeights() {
+        return weights;
+    }
+
+    public void setWeights(ArrayList<double[][]> weights) {
+        this.weights = weights;
+    }
+
+    /**
+     * 用于读取模型然后初始化构建
+     * @param fileName
+     * @return
+     */
+    public static BPNN build(String fileName){
+
         try {
+            ObjectMapper objectMapper = new ObjectMapper();
             String s = FileUtils.readTxt(new File("cache/" + fileName));
-            ArrayList<ArrayList<ArrayList<Double>>> weights= objectMapper.readValue(s,ArrayList.class);
-            for (int i =0 ;i < weights.size();++i){
-                double res[][] = new double[weights.get(i).size()][weights.get(i).get(0).size()];
-                for (int y = 0; y < weights.get(i).size(); y++) {
-                    for (int x = 0; x < weights.get(i).get(y).size(); x++) {
-                        res[y][x] = weights.get(i).get(y).get(x);
-                    }
-                }
-                this.weights.set(i,res);
-            }
+            BPNNConfig bpnnConfig= objectMapper.readValue(s,BPNNConfig.class);
+
+            BPNN bpnn = new BPNN(bpnnConfig.getInputSize(), bpnnConfig.getOutSize(), bpnnConfig.getStudyRate(), bpnnConfig.getHiddens());
+            bpnn.setWeights(bpnnConfig.getWeights());
+            return bpnn;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
-
-
 }

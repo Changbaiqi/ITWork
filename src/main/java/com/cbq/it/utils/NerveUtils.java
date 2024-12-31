@@ -2,7 +2,6 @@ package com.cbq.it.utils;
 
 import com.cbq.it.core.BPNN;
 import com.cbq.it.core.CNN;
-import com.cbq.it.core.OldCNN;
 import org.icepear.echarts.Line;
 import org.icepear.echarts.charts.line.LineAreaStyle;
 import org.icepear.echarts.charts.line.LineSeries;
@@ -13,8 +12,31 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class NerveUtils {
+    static double[][] kernel1 = {
+        { 1, 1,-1},
+        {-1, 0, 1},
+        {-1,-1, 0}
+    };
+
+    static double[][] kernel2 = {
+            {-1, 0,-1},
+            { 0, 0,-1},
+            { 1,-1, 0}
+    };
+    static double[][] kernel3 = {
+            { 0, 1, 0},
+            {-1, 0, 1},
+            { 0,-1,-1}
+    };
+    static double[][] kernel4 = {
+            { 0, 0, 0},
+            { 1, 1, 1},
+            { 0, 0, 0}
+    };
+
 
     /**
      * 矩阵转置
@@ -126,7 +148,7 @@ public class NerveUtils {
 
     public static BPNN nerveImage(String filePaths[]) {
         double[][] testRes = ImageUtils.readImageBinary(new File(filePaths[0]).listFiles()[0].getAbsolutePath());
-        BPNN bpnn = new BPNN(testRes[0].length, filePaths.length, 0.005, new int[]{128, 128, 128}); //构建神经网络
+        BPNN bpnn = new BPNN(testRes[0].length, filePaths.length, 0.005, new int[]{64, 64}); //构建神经网络
         bpnn.randomWeights(); //随机权值
 
 
@@ -151,8 +173,8 @@ public class NerveUtils {
 
 
         for (int i = 0; i < minColl; ++i) {
+            System.out.println("第" + (i + 1) + "轮训练");
             for (int x = 0; x < list.size(); ++x) {
-                System.out.println("第" + (i + 1) + "轮训练");
                 String s = list.get(x).get(i);
 
 
@@ -199,29 +221,29 @@ public class NerveUtils {
 
 
             }
-        }
-
-        Line line = new Line()
-                .addXAxis(new CategoryAxis()
-                        .setData(countArr.toArray())
-                        .setBoundaryGap(false))
-                .addYAxis()
-                .addSeries(new LineSeries()
-                        .setData(countScore.toArray())
-                        .setAreaStyle(new LineAreaStyle()))
+            Line line = new Line()
+                    .addXAxis(new CategoryAxis()
+                            .setData(countArr.toArray())
+                            .setBoundaryGap(false))
+                    .addYAxis()
+                    .addSeries(new LineSeries()
+                            .setData(countScore.toArray())
+                            .setAreaStyle(new LineAreaStyle()))
                 .addSeries(new LineSeries()
                         .setData(diffScore.toArray())
                         .setAreaStyle(new LineAreaStyle()));
 
-        Engine engine = new Engine();
-        engine.render("index.html", line);
+            Engine engine = new Engine();
+            engine.render("indexFormAverage.html", line);
+        }
+
+
         return bpnn;
     }
 
     public static BPNN nerveCNNImage(String filePaths[]) {
-//        double[][] testRes = turnMatrix(new File(filePaths[0]).listFiles()[0].getAbsolutePath());
         double[][] testRes = turnMatrixPlus(new File(filePaths[0]).listFiles()[0].getAbsolutePath());
-        BPNN bpnn = new BPNN(testRes[0].length, filePaths.length, 0.005, new int[]{128, 128});
+        BPNN bpnn = new BPNN(testRes[0].length, filePaths.length, 0.005, new int[]{120, 120});
         bpnn.randomWeights();
 
 
@@ -293,8 +315,9 @@ public class NerveUtils {
                             .setAreaStyle(new LineAreaStyle()));
 
             Engine engine = new Engine();
-            engine.render("index.html", line);
+            engine.render("indexFormAverage.html", line);
         }
+        System.out.println("训练完成，正确率为："+countScore.get(countScore.size()-1));
 
 
 
@@ -305,31 +328,20 @@ public class NerveUtils {
     public static double[][] turnMatrixPlus(String path) {
         double[][] imageMatrix = ImageUtils.readImageMatrixBinary(path);
         CNN cnn = new CNN(
-                new ArrayList<Integer>(Arrays.asList(3,3,3,3)),
-                new ArrayList<Integer>(Arrays.asList(1,1,1,1)),
-                new ArrayList<Integer>(Arrays.asList(2,2,2,2)),
+                new ArrayList<Integer>(Arrays.asList(3,3,3,3)),//对应每个卷积核的大小
+                new ArrayList<Integer>(Arrays.asList(1,1,1,1)),//对应每个卷积核的步长
+                new ArrayList<Integer>(Arrays.asList(2,2,2,2)),//对应池化层的大小
                 new ArrayList<double[][]>(Arrays.<double[][]>asList(
-                        new double[][]{
-                                {-1, 1, -1},
-                                {-1, 1, -1},
-                                {-1, 1, -1}},
-                        new double[][]{
-                                {-1, 1, -1},
-                                {1, -1, 1},
-                                {1, 1, 1}},
-                        new double[][]{
-                                {-1, -1, -1},
-                                {1, 1, 1},
-                                {-1, -1, -1}},
-                        new double[][]{
-                                {1, -1, -1},
-                                {-1, 1, -1},
-                                {-1, -1, 1}}
+                        kernel1, //卷积核1
+                        kernel2, //卷积核2
+                        kernel3, //卷积核3
+                        kernel4 //卷积核4
                 )),
-                imageMatrix
+                imageMatrix //输入值
         );
-        cnn.formWard();
-        ArrayList<double[][]> outs = cnn.getOuts();
+        cnn.formWard(); //向前传播
+        ArrayList<double[][]> outs = cnn.getOuts(); //获取输出
+        //输出数据一维化
         double[][] res= new double[1][outs.size()*outs.get(0).length*outs.get(0).length];
         int ans = 0;
         for(int i=0;i<outs.size();++i){
